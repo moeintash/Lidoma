@@ -117,6 +117,14 @@ header{background:var(--white);border-bottom:1px solid var(--border);position:st
 .brand-item{color:rgba(255,255,255,.35);font-size:16px;font-weight:600;letter-spacing:2px;transition:color .2s;cursor:pointer}
 .brand-item:hover{color:var(--gold)}
 
+/* LOGIN MODAL */
+.login-modal{background:var(--white);border-radius:16px;width:100%;max-width:380px;direction:rtl;overflow:hidden}
+.login-header{background:linear-gradient(135deg,var(--dark),var(--dark2));padding:32px;text-align:center}
+.login-logo{font-family:'Playfair Display',serif;color:var(--gold);font-size:22px;margin-bottom:6px}
+.login-sub{color:rgba(255,255,255,.5);font-size:12px}
+.login-body{padding:28px}
+.login-err{display:none;background:#FFEBEE;color:#C62828;padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:16px;text-align:center}
+
 /* ADMIN */
 .admin-panel{background:var(--white);border:2px dashed var(--gold);border-radius:16px;padding:32px;margin-bottom:40px}
 .admin-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--dark);margin-bottom:8px}
@@ -227,7 +235,7 @@ footer{background:var(--dark);color:rgba(255,255,255,.6);padding:48px 24px 24px}
       <li><a onclick="showSection('home')">خانه</a></li>
       <li><a onclick="showSection('shop')">فروشگاه</a></li>
       <li><a onclick="showSection('brands')">برندها</a></li>
-      <li><a onclick="showSection('admin')">پنل فروشنده</a></li>
+      <li><a onclick="adminAccess()">پنل فروشنده</a></li>
       <li><a href="tel:+989123456789">تماس با ما</a></li>
     </ul>
     <div class="header-actions">
@@ -346,10 +354,13 @@ footer{background:var(--dark);color:rgba(255,255,255,.6);padding:48px 24px 24px}
 <!-- ===== ADMIN ===== -->
 <div id="secAdmin" style="display:none">
   <div class="section">
-    <div class="section-header">
-      <div class="section-label">پنل مدیریت فروشگاه</div>
-      <div class="section-title">افزودن <span>محصول جدید</span></div>
-    </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:48px">
+        <div class="section-header" style="margin-bottom:0;text-align:right">
+          <div class="section-label">پنل مدیریت فروشگاه</div>
+          <div class="section-title">افزودن <span>محصول جدید</span></div>
+        </div>
+        <button onclick="adminLogout()" style="background:none;border:1px solid var(--border);color:var(--text-light);padding:8px 18px;border-radius:6px;font-family:'Vazirmatn',sans-serif;font-size:13px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--rose)';this.style.color='var(--rose)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-light)'">🚪 خروج از پنل</button>
+      </div>
     <div class="admin-panel">
       <div class="admin-title">🛒 ثبت محصول جدید</div>
       <div class="admin-sub">اطلاعات محصول را کامل وارد کنید تا در فروشگاه نمایش داده شود</div>
@@ -462,6 +473,29 @@ footer{background:var(--dark);color:rgba(255,255,255,.6);padding:48px 24px 24px}
     </div>
   </div>
 </footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="login-modal">
+    <div class="login-header">
+      <div class="login-logo">🔐 پنل فروشنده</div>
+      <div class="login-sub">GlamourDubai — دسترسی اختصاصی</div>
+    </div>
+    <div class="login-body">
+      <div class="login-err" id="loginErr">❌ نام کاربری یا رمز عبور اشتباه است</div>
+      <div class="pay-form-group">
+        <label class="pay-form-label">نام کاربری</label>
+        <input class="pay-form-input" id="loginUser" placeholder="نام کاربری" autocomplete="off" style="direction:ltr;text-align:right" onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+      <div class="pay-form-group">
+        <label class="pay-form-label">رمز عبور</label>
+        <input class="pay-form-input" id="loginPass" type="password" placeholder="رمز عبور" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+      <button class="pay-submit" onclick="doLogin()" style="margin-top:8px">ورود به پنل فروشنده</button>
+      <button class="pay-cancel" onclick="closeLogin()">انصراف</button>
+    </div>
+  </div>
+</div>
 
 <!-- CART MODAL -->
 <div class="modal-overlay" id="cartModal">
@@ -738,6 +772,47 @@ function showSection(sec){
   if(sec==='shop')renderShopProducts();
   if(sec==='admin'){renderAdminProducts();}
   if(sec==='home')renderFeaturedProducts();
+}
+
+function adminLogout(){
+  adminLoggedIn=false;
+  showSection('home');
+}
+
+function adminAccess(){
+  if(adminLoggedIn){showSection('admin');}
+  else{openLogin();}
+}
+
+// AUTH
+var ADMIN_USER='admin';
+var ADMIN_PASS='Glamour@1404';
+var adminLoggedIn=false;
+
+function openLogin(){
+  document.getElementById('loginModal').classList.add('open');
+  setTimeout(function(){document.getElementById('loginUser').focus()},100);
+}
+function closeLogin(){
+  document.getElementById('loginModal').classList.remove('open');
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+function doLogin(){
+  var u=document.getElementById('loginUser').value.trim();
+  var p=document.getElementById('loginPass').value;
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    adminLoggedIn=true;
+    closeLogin();
+    showSection('admin');
+  } else {
+    var err=document.getElementById('loginErr');
+    err.style.display='block';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+    setTimeout(function(){err.style.display='none'},3000);
+  }
 }
 
 // Close modals on overlay click
